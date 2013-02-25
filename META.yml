@@ -1,0 +1,51 @@
+---
+abstract: 'Composable tests with roles and Moo'
+author:
+  - 'David Golden <dagolden@cpan.org>'
+build_requires:
+  Capture::Tiny: 0
+  ExtUtils::MakeMaker: 0
+  File::Find: 0
+  File::Spec::Functions: 0
+  File::Temp: 0
+  List::Util: 0
+  warnings: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.30
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921'
+license: apache
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Test-Roo
+no_index:
+  directory:
+    - t
+    - xt
+    - examples
+    - corpus
+  package:
+    - DB
+provides:
+  Test::Roo:
+    file: lib/Test/Roo.pm
+    version: 0.001
+  Test::Roo::Role:
+    file: lib/Test/Roo/Role.pm
+    version: 0.001
+recommends:
+  bareword::filehandles: 0
+  indirect: 0
+  multidimensional: 0
+requires:
+  Moo: 1.000008
+  Test::More: 0.96
+  perl: 5.008001
+  strict: 0
+  strictures: 0
+resources:
+  bugtracker: https://github.com/dagolden/test-roo/issues
+  homepage: https://metacpan.org/release/Test-Roo
+  repository: git://github.com/dagolden/test-roo.git
+version: 0.001
