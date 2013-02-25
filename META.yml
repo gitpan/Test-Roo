@@ -30,10 +30,10 @@ no_index:
 provides:
   Test::Roo:
     file: lib/Test/Roo.pm
-    version: 0.001
+    version: 0.002
   Test::Roo::Role:
     file: lib/Test/Roo/Role.pm
-    version: 0.001
+    version: 0.002
 recommends:
   bareword::filehandles: 0
   indirect: 0
@@ -48,4 +48,4 @@ resources:
   bugtracker: https://github.com/dagolden/test-roo/issues
   homepage: https://metacpan.org/release/Test-Roo
   repository: git://github.com/dagolden/test-roo.git
-version: 0.001
+version: 0.002

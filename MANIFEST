@@ -25,11 +25,14 @@ t/bin/skip-all.pl
 t/bin/skip-in-role.pl
 t/bin/unsatisfied.pl
 t/exceptions.t
+t/lib/ClassConstructor.pm
 t/lib/LastTest.pm
 t/lib/RequiresFixture.pm
 t/lib/SetTear.pm
 t/lib/Skipper.pm
+t/multi.t
 t/ordering.t
+t/role-multi.t
 t/role.t
 t/setup-teardown.t
 tidyall.ini

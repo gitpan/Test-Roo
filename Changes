@@ -1,5 +1,12 @@
 Revision history for Test-Roo
 
+0.002     2013-02-25 14:25:09 America/New_York
+
+    [ADDED]
+
+    - Refactored test run code into a new 'run_me' method to allow manual
+      control over test runs, including multiple, parameterized runs.
+
 0.001     2013-02-25 12:23:27 America/New_York
 
     - First release

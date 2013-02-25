@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Role;
 # ABSTRACT: Composable role for Test::Roo
-our $VERSION = '0.001'; # VERSION
+our $VERSION = '0.002'; # VERSION
 
 use Test::Roo (); # no imports!
 
@@ -34,7 +34,7 @@ Test::Roo::Role - Composable role for Test::Roo
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 

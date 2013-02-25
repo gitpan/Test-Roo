@@ -3,11 +3,11 @@ use strictures;
 
 package Test::Roo;
 # ABSTRACT: Composable tests with roles and Moo
-our $VERSION = '0.001'; # VERSION
+our $VERSION = '0.002'; # VERSION
 
 use Test::More 0.96 import => [qw/subtest done_testing/];
 
-our @EXPORT = qw/setup do_it teardown test run_tests/;
+our @EXPORT = qw/setup teardown my_tests run_me test run_tests/;
 
 sub import {
     my ( $class, @args ) = @_;
@@ -32,7 +32,7 @@ sub test {
         my $self = shift;
         subtest $name => sub { $code->($self) };
     };
-    eval qq{ package $caller; after do_it => \$subtest };
+    eval qq{ package $caller; after my_tests => \$subtest };
     die $@ if $@;
 }
 
@@ -45,10 +45,19 @@ sub run_tests {
         die $@ if $@;
     }
     my $obj = $caller->new;
-    $obj->setup;
-    $obj->do_it;
-    $obj->teardown;
+    $obj->run_me;
     done_testing;
+}
+
+#--------------------------------------------------------------------------#
+# methods
+#--------------------------------------------------------------------------#
+
+sub run_me {
+    my ($self) = @_;
+    $self->setup;
+    $self->my_tests;
+    $self->teardown;
 }
 
 #--------------------------------------------------------------------------#
@@ -59,7 +68,7 @@ sub setup { }
 
 sub teardown { }
 
-sub do_it { }
+sub my_tests { }
 
 1;
 
@@ -76,7 +85,7 @@ Test::Roo - Composable tests with roles and Moo
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 
@@ -136,7 +145,7 @@ compose the Awesome::Module::Test::Role behavior for its own tests.
 No more copying and pasting tests from a super class!  Superclasses define and
 share their tests.  Subclasses provide their own fixtures and run the tests.
 
-=for Pod::Coverage setup teardown do_it
+=for Pod::Coverage add_methods_here
 
 =head1 USAGE
 
@@ -179,9 +188,59 @@ will depend on when roles are composed.
 You can even call test functions in these, for example, to confirm
 that something has been set up or cleaned up.
 
-=head2 Imported functions
+=head2 Running tests
 
-=head3 test
+The simplest way to use L<Test::Roo> is to make the C<main> package in your
+test file the test class and call C<run_tests> in it:
+
+    # t/test.t
+    use Test::Roo; # loads Moo and Test::More
+
+    use lib 't/lib';
+
+    has class => (
+        is      => 'ro',
+        default => sub { "Digest::MD5" },
+    );
+
+    run_tests(qw/MyTestRole/);
+
+If you do this, however, you can't specify arguments to the test class
+constructor and can only run the test class once.
+
+Alternatively, you can create a separate package (in the test file or
+in a separate C<.pm> file) and create and run the test objects yourself:
+
+    # t/test.t
+    package MyTest;
+    use Test::Roo;
+
+    use lib 't/lib';
+
+    has class => (
+        is       => 'ro',
+        required => 1,
+    );
+
+    with 'MyTestRole';
+
+    package main;
+    use strictures;
+    use Test::More;
+
+    for my $c ( qw/Digest::MD5 Digest::SHA/ ) {
+        my $obj = new_ok( 'MyTest', [class => $c] );
+        $obj->run_me;
+    }
+
+    done_testing;
+
+Note that, in this case, you will need to compose your own roles with C<with>
+and call C<done_testing> yourself.
+
+=head1 FUNCTIONS
+
+=head2 test
 
     test $label => sub { ... };
 
@@ -191,25 +250,39 @@ the test object as its only argument.
 Tests are run in the order declared, so the order of tests from roles will
 depend on when they are composed relative to other test declarations.
 
-=head3 run_tests
+=head2 run_tests
 
-    run_tests( @optional_roles );
+    run_tests( @optional_roles  );
 
-The C<run_tests> function composes an optional list of roles into the
-current package, creates an object, calls the setup method (triggering
-modifiers), runs the tests, calls the teardown method (triggering
-modifiers), and calls C<done_testing>.
+The C<run_tests> function composes an optional list of roles into the calling
+package, creates an object without arguments, calls the C<run_me> method on it,
+and calls C<done_testing>.
 
 Because this is usually at the end of the test file, all attributes,
 tests and method modifiers in the main test file will be set up before
 roles are composed.  If this isn't what you want, use C<with> earlier
 in the file and omit the role from the arguments to C<run_tests>.
 
-=head2 Stub methods
+Because it calls C<done_testing>, it may only be called once for a given test class.
 
-Loading L<Test::Roo> imports three stub methods, C<setup>, C<teardown> and
-C<do_it>.  These are used to anchor method modifiers in the testing class and
-should not be modified directly.
+=head1 IMPORTED METHODS
+
+Loading L<Test::Roo> imports several subroutines into the calling
+package to create required default methods.
+
+=head2 run_me
+
+    $obj->run_me;
+
+This method runs the setup method (triggering modifiers), runs the tests, and
+calls the teardown method (triggering modifiers).  It is called by the
+C<run_tests> function, or you can call it yourself after composing
+roles with C<with>.
+
+=head2 setup, teardown, my_tests
+
+These are used to anchor method modifiers in the testing class and
+should not be otherwise modified or called directly.
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
 
