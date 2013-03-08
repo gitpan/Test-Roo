@@ -3,7 +3,9 @@ use Test::Roo;
 
 use lib 't/lib';
 
-run_tests( qw/RequiresFixture/ );
+with qw/RequiresFixture/;
+run_me;
+done_testing;
 #
 # This file is part of Test-Roo
 #

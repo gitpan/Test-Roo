@@ -7,7 +7,10 @@ test in_main => sub {
     pass( "main" );
 };
 
-run_tests(qw/LastTest/);
+with 'LastTest';
+
+run_me;
+done_testing;
 
 #
 # This file is part of Test-Roo

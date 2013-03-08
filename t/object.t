@@ -3,37 +3,25 @@ use 5.008001;
 package MyTest;
 use Test::Roo;
 
-has phrase => (
-    is       => 'ro',
-    required => 1,
+has fixture => (
+    is => 'ro',
+    default => sub { "hello world" },
 );
-
-has regex => (
-    is      => 'ro',
-    default => sub { qr/world/i },
-);
-
-sub _build_description {
-    return shift->phrase
-}
 
 test try_me => sub {
     my $self = shift;
-    like( $self->phrase, $self->regex, "phrase matched regex" );
+    like( $self->fixture, qr/hello world/, "saw fixture" );
 };
 
 package main;
 use strictures;
 use Test::More;
 
-my @phrases = ( 'hello world', 'goodbye world', );
-
-for my $p (@phrases) {
-    MyTest->run_tests({phrase => $p});
-}
+my $obj = MyTest->new;
+$obj->run_tests;
+$obj->run_tests("with description");
 
 done_testing;
-
 #
 # This file is part of Test-Roo
 #

@@ -8,7 +8,10 @@ has fixture => (
     default => sub { "hello world" },
 );
 
-run_tests( qw/RoleNotFoundAnywhere/ );
+with qw/RoleNotFoundAnywhere/;
+
+run_me;
+done_testing;
 #
 # This file is part of Test-Roo
 #

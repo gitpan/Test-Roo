@@ -3,72 +3,43 @@ use strictures;
 
 package Test::Roo;
 # ABSTRACT: Composable tests with roles and Moo
-our $VERSION = '0.002'; # VERSION
+our $VERSION = '1.000'; # VERSION
 
-use Test::More 0.96 import => [qw/subtest done_testing/];
-
-our @EXPORT = qw/setup teardown my_tests run_me test run_tests/;
+use Sub::Install;
 
 sub import {
     my ( $class, @args ) = @_;
     my $caller = caller;
-    for my $x (@EXPORT) {
-        no strict 'refs';
-        *{ $caller . "::$x" } = *{$x};
+    for my $sub (qw/test run_me/) {
+        Sub::Install::install_sub( { into => $caller, code => $sub } );
     }
     strictures->import; # do this for Moo, since we load Moo in eval
-    eval qq{ package $caller; use Test::More; use Moo };
+    eval qq{
+        package $caller;
+        use Moo;
+        extends 'Test::Roo::Class'
+    };
+    if (@args) {
+        eval qq{ package $caller; use Test::More \@args };
+    }
+    else {
+        eval qq{ package $caller; use Test::More };
+    }
     die $@ if $@;
 }
-
-#--------------------------------------------------------------------------#
-# functions
-#--------------------------------------------------------------------------#
 
 sub test {
     my ( $name, $code ) = @_;
-    my $caller  = caller;
-    my $subtest = sub {
-        my $self = shift;
-        subtest $name => sub { $code->($self) };
-    };
-    eval qq{ package $caller; after my_tests => \$subtest };
+    my $caller = caller;
+    my $subtest = sub { shift->each_test( $name, $code ) };
+    eval qq{ package $caller; after _do_tests => \$subtest };
     die $@ if $@;
 }
 
-# XXX take args for new?
-sub run_tests {
-    my @roles  = @_;
-    my $caller = caller;
-    for my $role (@roles) {
-        eval qq{ package $caller; with '$role' };
-        die $@ if $@;
-    }
-    my $obj = $caller->new;
-    $obj->run_me;
-    done_testing;
-}
-
-#--------------------------------------------------------------------------#
-# methods
-#--------------------------------------------------------------------------#
-
 sub run_me {
-    my ($self) = @_;
-    $self->setup;
-    $self->my_tests;
-    $self->teardown;
+    my $class = caller;
+    $class->run_tests(@_);
 }
-
-#--------------------------------------------------------------------------#
-# stub methods that get modified
-#--------------------------------------------------------------------------#
-
-sub setup { }
-
-sub teardown { }
-
-sub my_tests { }
 
 1;
 
@@ -85,7 +56,7 @@ Test::Roo - Composable tests with roles and Moo
 
 =head1 VERSION
 
-version 0.002
+version 1.000
 
 =head1 SYNOPSIS
 
@@ -101,7 +72,10 @@ A test file:
         default => sub { "Digest::MD5" },
     );
 
-    run_tests(qw/MyTestRole/);
+    with 'MyTestRole';
+
+    run_me;
+    done_testing;
 
 A testing role:
 
@@ -150,18 +124,19 @@ share their tests.  Subclasses provide their own fixtures and run the tests.
 =head1 USAGE
 
 Importing L<Test::Roo> also loads L<Moo> (which gives you L<strictures> with
-fatal warnings and other goodies) and L<Test::More>.  No test plan is
-used.  The C<done_testing> function will be called for you automatically.
+fatal warnings and other goodies) and makes the current package a subclass
+of L<Test::Roo::Class>.
+
+Importing also loads L<Test::More>.  No test plan is used.  The C<done_testing>
+function must be used at the end of every test file.  Any import arguments are
+passed through to Test::More's C<import> method.
 
 See also L<Test::Roo::Role> for test role usage.
 
-If you have to call C<plan skip_all>, do it in the main body of your code, not
-in a test or modifier.
-
 =head2 Creating fixtures
 
-You can create fixtures with normal Moo syntax.  You can even make them lazy
-if you want:
+You can create fixtures with normal Moo syntax.  You can even make them lazy if
+you want:
 
     has fixture => (
         is => 'lazy'
@@ -169,47 +144,85 @@ if you want:
 
     sub _build_fixture { ... }
 
-This becomes really useful with L<Test::Roo::Role>.  A role could define
-the attribute and require the builder method to be provided by the
-main test class.
+This becomes really useful with L<Test::Roo::Role>.  A role could define the
+attribute and require the builder method to be provided by the main test class.
+
+=head2 Composing test roles
+
+You can use roles to define units of test behavior and then compose them into
+your test class using the C<with> function.  Test roles may define attributes,
+declare tests, require certain methods and anything else you can regularly do
+with roles.
+
+    use Test::Roo;
+
+    with 'MyTestRole1', 'MyTestRole2';
+
+See L<Test::Roo::Role> and the L<Test::Roo::Cookbook> for details and
+examples.
 
 =head2 Setup and teardown
 
-You can add method modifiers around the C<setup> and C<teardown> methods
-and these will be run before and after all tests (respectively).
+You can add method modifiers around the C<setup> and C<teardown> methods and
+these will be run before tests begin and after tests finish (respectively).
 
     before  setup     => sub { ... };
 
     after   teardown  => sub { ... };
 
-Roles may also modify these, so the order that modifiers will be called
-will depend on when roles are composed.
+You can also add method modifiers around C<each_test>, which will be
+run before and after B<every> individual test.  You could use these to
+prepare or reset a fixture.
 
-You can even call test functions in these, for example, to confirm
-that something has been set up or cleaned up.
+    has fixture => ( is => 'lazy, clearer => 1, predicate => 1 );
+
+    after  each_test => sub { shift->clear_fixture };
+
+Roles may also modify C<setup>, C<teardown>, and C<each_test>, so the order
+that modifiers will be called will depend on when roles are composed.  Be
+careful with C<each_test>, though, because the global effect may make
+composition more fragile.
+
+You can call test functions in modifiers. For example, you could
+confirm that something has been set up or cleaned up.
+
+    before each_test => sub { ok( ! shift->has_fixture ) };
 
 =head2 Running tests
 
-The simplest way to use L<Test::Roo> is to make the C<main> package in your
-test file the test class and call C<run_tests> in it:
+The simplest way to use L<Test::Roo> with a single F<.t> file is to let the
+C<main> package be the test class and call C<run_me> in it:
 
     # t/test.t
     use Test::Roo; # loads Moo and Test::More
-
-    use lib 't/lib';
 
     has class => (
         is      => 'ro',
         default => sub { "Digest::MD5" },
     );
 
-    run_tests(qw/MyTestRole/);
+    test 'load class' => sub {
+        my $self = shift;
+        require_ok( $self->class );
+    }
 
-If you do this, however, you can't specify arguments to the test class
-constructor and can only run the test class once.
+    run_me;
+    done_testing;
 
-Alternatively, you can create a separate package (in the test file or
-in a separate C<.pm> file) and create and run the test objects yourself:
+Calling C<< run_me(@args) >> is equivalent to calling
+C<< __PACKAGE__->run_tests(@args) >> and runs tests for the current package.
+
+You may specify an optional description or hash reference of constructor
+arguments to customize the test object:
+
+    run_me( "load MD5" );
+    run_me( { class => "Digest::MD5" } );
+    run_me( "load MD5", { class => "Digest::MD5" } );
+
+See L<Test::Roo::Class> for more about the C<run_tests> method.
+
+Alternatively, you can create a separate package (in the test file or in a
+separate F<.pm> file) and run tests explicitly on that class.
 
     # t/test.t
     package MyTest;
@@ -229,16 +242,15 @@ in a separate C<.pm> file) and create and run the test objects yourself:
     use Test::More;
 
     for my $c ( qw/Digest::MD5 Digest::SHA/ ) {
-        my $obj = new_ok( 'MyTest', [class => $c] );
-        $obj->run_me;
+        MyTest->run_tests("Testing $c", { class => $c } );
     }
 
     done_testing;
 
-Note that, in this case, you will need to compose your own roles with C<with>
-and call C<done_testing> yourself.
+=head1 EXPORTED FUNCTIONS
 
-=head1 FUNCTIONS
+Loading L<Test::Roo> exports subroutines into the calling package to declare
+and run tests.
 
 =head2 test
 
@@ -250,39 +262,53 @@ the test object as its only argument.
 Tests are run in the order declared, so the order of tests from roles will
 depend on when they are composed relative to other test declarations.
 
-=head2 run_tests
-
-    run_tests( @optional_roles  );
-
-The C<run_tests> function composes an optional list of roles into the calling
-package, creates an object without arguments, calls the C<run_me> method on it,
-and calls C<done_testing>.
-
-Because this is usually at the end of the test file, all attributes,
-tests and method modifiers in the main test file will be set up before
-roles are composed.  If this isn't what you want, use C<with> earlier
-in the file and omit the role from the arguments to C<run_tests>.
-
-Because it calls C<done_testing>, it may only be called once for a given test class.
-
-=head1 IMPORTED METHODS
-
-Loading L<Test::Roo> imports several subroutines into the calling
-package to create required default methods.
-
 =head2 run_me
 
-    $obj->run_me;
+    run_me;
+    run_me( $description );
+    run_me( $init_args   );
+    run_me( $description, $init_args );
 
-This method runs the setup method (triggering modifiers), runs the tests, and
-calls the teardown method (triggering modifiers).  It is called by the
-C<run_tests> function, or you can call it yourself after composing
-roles with C<with>.
+The C<run_me> function calls the C<run_tests> method on the current package
+and passes all arguments to that method.  It takes a description and/or
+a hash reference of constructor arguments.
 
-=head2 setup, teardown, my_tests
+=head1 DIFFERENCES FROM TEST::ROUTINE
 
-These are used to anchor method modifiers in the testing class and
-should not be otherwise modified or called directly.
+While this module was inspired by L<Test::Routine>, it is not a drop-in
+replacement.  Here is an overview of major differences:
+
+=over 4
+
+=item *
+
+L<Test::Roo> uses L<Moo>; L<Test::Routine> uses L<Moose>
+
+=item *
+
+Loading L<Test::Roo> makes the importing package a class; in L<Test::Routine> it becomes a role
+
+=item *
+
+Loading L<Test::Roo> loads L<Test::More>; L<Test::Routine> does not
+
+=item *
+
+In L<Test::Roo>, C<run_test> is a method; in L<Test::Routine> it is a function and takes arguments in a different order
+
+=item *
+
+In L<Test::Roo>, all role composition must be explicit using C<with>; in L<Test::Routine>, the C<run_tests> command can also compose roles
+
+=item *
+
+In L<Test::Roo>, test blocks become method modifiers hooked on an empty method; in L<Test::Routine>, they become methods run via introspection
+
+=item *
+
+In L<Test::Roo>, setup and teardown are done by modifying C<setup> and C<teardown> methods; in L<Test::Routine> they are done by modifying C<run_test>
+
+=back
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
 

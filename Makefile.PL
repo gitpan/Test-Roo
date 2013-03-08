@@ -18,6 +18,7 @@ my %WriteMakefileArgs = (
     "File::Spec::Functions" => 0,
     "File::Temp" => 0,
     "List::Util" => 0,
+    "strict" => 0,
     "warnings" => 0
   },
   "CONFIGURE_REQUIRES" => {
@@ -29,11 +30,12 @@ my %WriteMakefileArgs = (
   "NAME" => "Test::Roo",
   "PREREQ_PM" => {
     "Moo" => "1.000008",
+    "MooX::Types::MooseLike::Base" => 0,
+    "Sub::Install" => 0,
     "Test::More" => "0.96",
-    "strict" => 0,
     "strictures" => 0
   },
-  "VERSION" => "0.002",
+  "VERSION" => "1.000",
   "test" => {
     "TESTS" => "t/*.t"
   }

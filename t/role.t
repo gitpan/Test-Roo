@@ -8,7 +8,9 @@ has fixture => (
     default => sub { "hello world" },
 );
 
-run_tests( qw/RequiresFixture/ );
+with qw/RequiresFixture/;
+run_me;
+done_testing;
 #
 # This file is part of Test-Roo
 #

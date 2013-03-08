@@ -9,6 +9,7 @@ build_requires:
   File::Spec::Functions: 0
   File::Temp: 0
   List::Util: 0
+  strict: 0
   warnings: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
@@ -30,22 +31,29 @@ no_index:
 provides:
   Test::Roo:
     file: lib/Test/Roo.pm
-    version: 0.002
+    version: 1.000
+  Test::Roo::Class:
+    file: lib/Test/Roo/Class.pm
+    version: 1.000
+  Test::Roo::Cookbook:
+    file: lib/Test/Roo/Cookbook.pm
+    version: 1.000
   Test::Roo::Role:
     file: lib/Test/Roo/Role.pm
-    version: 0.002
+    version: 1.000
 recommends:
   bareword::filehandles: 0
   indirect: 0
   multidimensional: 0
 requires:
   Moo: 1.000008
+  MooX::Types::MooseLike::Base: 0
+  Sub::Install: 0
   Test::More: 0.96
   perl: 5.008001
-  strict: 0
   strictures: 0
 resources:
   bugtracker: https://github.com/dagolden/test-roo/issues
   homepage: https://metacpan.org/release/Test-Roo
   repository: git://github.com/dagolden/test-roo.git
-version: 0.002
+version: 1.000

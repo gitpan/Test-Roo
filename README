@@ -2,7 +2,7 @@ NAME
     Test::Roo - Composable tests with roles and Moo
 
 VERSION
-    version 0.002
+    version 1.000
 
 SYNOPSIS
     A test file:
@@ -17,7 +17,10 @@ SYNOPSIS
             default => sub { "Digest::MD5" },
         );
 
-        run_tests(qw/MyTestRole/);
+        with 'MyTestRole';
+
+        run_me;
+        done_testing;
 
     A testing role:
 
@@ -65,13 +68,14 @@ DESCRIPTION
 
 USAGE
     Importing Test::Roo also loads Moo (which gives you strictures with
-    fatal warnings and other goodies) and Test::More. No test plan is used.
-    The "done_testing" function will be called for you automatically.
+    fatal warnings and other goodies) and makes the current package a
+    subclass of Test::Roo::Class.
+
+    Importing also loads Test::More. No test plan is used. The
+    "done_testing" function must be used at the end of every test file. Any
+    import arguments are passed through to Test::More's "import" method.
 
     See also Test::Roo::Role for test role usage.
-
-    If you have to call "plan skip_all", do it in the main body of your
-    code, not in a test or modifier.
 
   Creating fixtures
     You can create fixtures with normal Moo syntax. You can even make them
@@ -87,41 +91,80 @@ USAGE
     attribute and require the builder method to be provided by the main test
     class.
 
+  Composing test roles
+    You can use roles to define units of test behavior and then compose them
+    into your test class using the "with" function. Test roles may define
+    attributes, declare tests, require certain methods and anything else you
+    can regularly do with roles.
+
+        use Test::Roo;
+
+        with 'MyTestRole1', 'MyTestRole2';
+
+    See Test::Roo::Role and the Test::Roo::Cookbook for details and
+    examples.
+
   Setup and teardown
     You can add method modifiers around the "setup" and "teardown" methods
-    and these will be run before and after all tests (respectively).
+    and these will be run before tests begin and after tests finish
+    (respectively).
 
         before  setup     => sub { ... };
 
         after   teardown  => sub { ... };
 
-    Roles may also modify these, so the order that modifiers will be called
-    will depend on when roles are composed.
+    You can also add method modifiers around "each_test", which will be run
+    before and after every individual test. You could use these to prepare
+    or reset a fixture.
 
-    You can even call test functions in these, for example, to confirm that
-    something has been set up or cleaned up.
+        has fixture => ( is => 'lazy, clearer => 1, predicate => 1 );
+
+        after  each_test => sub { shift->clear_fixture };
+
+    Roles may also modify "setup", "teardown", and "each_test", so the order
+    that modifiers will be called will depend on when roles are composed. Be
+    careful with "each_test", though, because the global effect may make
+    composition more fragile.
+
+    You can call test functions in modifiers. For example, you could confirm
+    that something has been set up or cleaned up.
+
+        before each_test => sub { ok( ! shift->has_fixture ) };
 
   Running tests
-    The simplest way to use Test::Roo is to make the "main" package in your
-    test file the test class and call "run_tests" in it:
+    The simplest way to use Test::Roo with a single .t file is to let the
+    "main" package be the test class and call "run_me" in it:
 
         # t/test.t
         use Test::Roo; # loads Moo and Test::More
-
-        use lib 't/lib';
 
         has class => (
             is      => 'ro',
             default => sub { "Digest::MD5" },
         );
 
-        run_tests(qw/MyTestRole/);
+        test 'load class' => sub {
+            my $self = shift;
+            require_ok( $self->class );
+        }
 
-    If you do this, however, you can't specify arguments to the test class
-    constructor and can only run the test class once.
+        run_me;
+        done_testing;
+
+    Calling "run_me(@args)" is equivalent to calling
+    "__PACKAGE__->run_tests(@args)" and runs tests for the current package.
+
+    You may specify an optional description or hash reference of constructor
+    arguments to customize the test object:
+
+        run_me( "load MD5" );
+        run_me( { class => "Digest::MD5" } );
+        run_me( "load MD5", { class => "Digest::MD5" } );
+
+    See Test::Roo::Class for more about the "run_tests" method.
 
     Alternatively, you can create a separate package (in the test file or in
-    a separate ".pm" file) and create and run the test objects yourself:
+    a separate .pm file) and run tests explicitly on that class.
 
         # t/test.t
         package MyTest;
@@ -141,16 +184,15 @@ USAGE
         use Test::More;
 
         for my $c ( qw/Digest::MD5 Digest::SHA/ ) {
-            my $obj = new_ok( 'MyTest', [class => $c] );
-            $obj->run_me;
+            MyTest->run_tests("Testing $c", { class => $c } );
         }
 
         done_testing;
 
-    Note that, in this case, you will need to compose your own roles with
-    "with" and call "done_testing" yourself.
+EXPORTED FUNCTIONS
+    Loading Test::Roo exports subroutines into the calling package to
+    declare and run tests.
 
-FUNCTIONS
   test
         test $label => sub { ... };
 
@@ -161,36 +203,39 @@ FUNCTIONS
     will depend on when they are composed relative to other test
     declarations.
 
-  run_tests
-        run_tests( @optional_roles  );
-
-    The "run_tests" function composes an optional list of roles into the
-    calling package, creates an object without arguments, calls the "run_me"
-    method on it, and calls "done_testing".
-
-    Because this is usually at the end of the test file, all attributes,
-    tests and method modifiers in the main test file will be set up before
-    roles are composed. If this isn't what you want, use "with" earlier in
-    the file and omit the role from the arguments to "run_tests".
-
-    Because it calls "done_testing", it may only be called once for a given
-    test class.
-
-IMPORTED METHODS
-    Loading Test::Roo imports several subroutines into the calling package
-    to create required default methods.
-
   run_me
-        $obj->run_me;
+        run_me;
+        run_me( $description );
+        run_me( $init_args   );
+        run_me( $description, $init_args );
 
-    This method runs the setup method (triggering modifiers), runs the
-    tests, and calls the teardown method (triggering modifiers). It is
-    called by the "run_tests" function, or you can call it yourself after
-    composing roles with "with".
+    The "run_me" function calls the "run_tests" method on the current
+    package and passes all arguments to that method. It takes a description
+    and/or a hash reference of constructor arguments.
 
-  setup, teardown, my_tests
-    These are used to anchor method modifiers in the testing class and
-    should not be otherwise modified or called directly.
+DIFFERENCES FROM TEST::ROUTINE
+    While this module was inspired by Test::Routine, it is not a drop-in
+    replacement. Here is an overview of major differences:
+
+    *   Test::Roo uses Moo; Test::Routine uses Moose
+
+    *   Loading Test::Roo makes the importing package a class; in
+        Test::Routine it becomes a role
+
+    *   Loading Test::Roo loads Test::More; Test::Routine does not
+
+    *   In Test::Roo, "run_test" is a method; in Test::Routine it is a
+        function and takes arguments in a different order
+
+    *   In Test::Roo, all role composition must be explicit using "with"; in
+        Test::Routine, the "run_tests" command can also compose roles
+
+    *   In Test::Roo, test blocks become method modifiers hooked on an empty
+        method; in Test::Routine, they become methods run via introspection
+
+    *   In Test::Roo, setup and teardown are done by modifying "setup" and
+        "teardown" methods; in Test::Routine they are done by modifying
+        "run_test"
 
 SUPPORT
   Bugs / Feature Requests

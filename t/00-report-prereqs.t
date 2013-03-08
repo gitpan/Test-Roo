@@ -17,6 +17,8 @@ my @modules = qw(
   File::Temp
   List::Util
   Moo
+  MooX::Types::MooseLike::Base
+  Sub::Install
   Test::More
   bareword::filehandles
   indirect

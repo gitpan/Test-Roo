@@ -3,19 +3,27 @@ use strictures;
 
 package Test::Roo::Role;
 # ABSTRACT: Composable role for Test::Roo
-our $VERSION = '0.002'; # VERSION
+our $VERSION = '1.000'; # VERSION
 
 use Test::Roo (); # no imports!
+use Sub::Install;
 
 sub import {
     my ( $class, @args ) = @_;
     my $caller = caller;
-    {
-        no strict 'refs';
-        *{ $caller . "::test" } = *Test::Roo::test;
-    }
+    Sub::Install::install_sub(
+        { into => $caller, code => 'test', from => 'Test::Roo' } );
     strictures->import; # do this for Moo, since we load Moo in eval
-    eval qq{ package $caller; use Test::More; use Moo::Role };
+    eval qq{
+        package $caller;
+        use Moo::Role;
+    };
+    if (@args) {
+        eval qq{ package $caller; use Test::More \@args };
+    }
+    else {
+        eval qq{ package $caller; use Test::More };
+    }
     die $@ if $@;
 }
 
@@ -34,7 +42,7 @@ Test::Roo::Role - Composable role for Test::Roo
 
 =head1 VERSION
 
-version 0.002
+version 1.000
 
 =head1 SYNOPSIS
 
@@ -62,11 +70,11 @@ This module defines test behaviors as a L<Moo::Role>.
 
 =head1 USAGE
 
-Importing L<Test::Roo::Role> also loads L<Moo::Role> (which gives you L<strictures> with
-fatal warnings and other goodies) and L<Test::More>.
+Importing L<Test::Roo::Role> also loads L<Moo::Role> (which gives you
+L<strictures> with fatal warnings and other goodies).
 
-If you have to call C<plan skip_all>, do it in the main body of your code, not
-in a test or modifier.
+Importing also loads L<Test::More>.  Any import arguments are passed through to
+Test::More's C<import> method.
 
 =head2 Creating and requiring fixtures
 
@@ -86,22 +94,37 @@ See L<Moo::Role> and L<Role::Tiny> for everything you can do with roles.
 
 =head2 Setup and teardown
 
-You can add method modifiers around the C<setup> and C<teardown> methods
-and these will be run before and after all tests (respectively).
+You can add method modifiers around the C<setup> and C<teardown> methods and
+these will be run before tests begin and after tests finish (respectively).
 
     before  setup     => sub { ... };
 
     after   teardown  => sub { ... };
 
-The order that modifiers will be called will depend on the timing of role
-composition.
+You can also add method modifiers around C<each_test>, which will be
+run before and after B<every> individual test.  You could use these to
+prepare or reset a fixture.
 
-You can even call test functions in these, for example, to confirm
-that something has been set up or cleaned up.
+    has fixture => ( is => 'lazy, clearer => 1, predicate => 1 );
 
-=head2 Imported functions
+    after  each_test => sub { shift->clear_fixture };
 
-=head3 test
+Roles may also modify C<setup>, C<teardown>, and C<each_test>, so the order
+that modifiers will be called will depend on when roles are composed.  Be
+careful with C<each_test>, though, because the global effect may make
+composition more fragile.
+
+You can call test functions in modifiers. For example, you could
+confirm that something has been set up or cleaned up.
+
+    before each_test => sub { ok( ! shift->has_fixture ) };
+
+=head1 EXPORTED FUNCTIONS
+
+Loading L<Test::Roo::Role> exports a single subroutine into the calling package
+to declare tests.
+
+=head2 test
 
     test $label => sub { ... };
 

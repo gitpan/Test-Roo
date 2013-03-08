@@ -5,7 +5,8 @@ $foo = "1.23";
 
 test 'just pass' => sub { ok(1) };
 
-run_tests;
+run_me;
+done_testing;
 #
 # This file is part of Test-Roo
 #
