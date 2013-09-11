@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Class;
 # ABSTRACT: Base class for Test::Roo test classes
-our $VERSION = '1.000'; # VERSION
+our $VERSION = '1.001'; # VERSION
 
 use Moo;
 use MooX::Types::MooseLike::Base qw/Str/;
@@ -62,8 +62,8 @@ sub setup { }
 
 
 sub each_test {
-    my ( $self, $name, $code ) = @_;
-    subtest $name => sub { $code->($self) };
+    my ( $self, $code ) = @_;
+    $code->($self);
 }
 
 
@@ -81,13 +81,15 @@ __END__
 
 =pod
 
+=encoding utf-8
+
 =head1 NAME
 
 Test::Roo::Class - Base class for Test::Roo test classes
 
 =head1 VERSION
 
-version 1.000
+version 1.001
 
 =head1 DESCRIPTION
 
@@ -102,7 +104,7 @@ this class yourself, but use L<Test::Roo> to do so instead.
 A description for a subtest block wrapping all tests by the object.  It is a
 'lazy' attribute.  Test classes may implement their own C<_build_description>
 method to create a description from object attributes.  Otherwise, the default
-is "testing with CLASS". 
+is "testing with CLASS".
 
 =head1 METHODS
 
@@ -147,7 +149,7 @@ It may also be used to anchor modifiers that should run before or after
 each test block, though this can lead to brittle design as modifiers
 will globally affect every test block, including composed ones.
 
-=head2 teardown 
+=head2 teardown
 
 This is an empty method used to anchor method modifiers.  It should not
 be overridden by subclasses.

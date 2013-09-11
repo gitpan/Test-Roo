@@ -6,6 +6,7 @@ META.json
 META.yml
 Makefile.PL
 README
+cpanfile
 dist.ini
 examples/cookbook/hookable_test.t
 examples/cookbook/lib/CorpusCheck.pm
@@ -19,7 +20,7 @@ examples/cookbook/test-pir.pl
 examples/cookbook/with_tempd.t
 examples/cookbook/wrapped.t
 examples/synopsis/README
-examples/synopsis/t/lib/MyTestRole.pm
+examples/synopsis/t/lib/ObjectCreation.pm
 examples/synopsis/t/test.t
 lib/Test/Roo.pm
 lib/Test/Roo/Class.pm

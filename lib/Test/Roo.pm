@@ -2,8 +2,10 @@ use 5.008001;
 use strictures;
 
 package Test::Roo;
-# ABSTRACT: Composable tests with roles and Moo
-our $VERSION = '1.000'; # VERSION
+# ABSTRACT: Composable, reusable tests with roles and Moo
+our $VERSION = '1.001'; # VERSION
+
+use Test::More 0.96 import => [qw/subtest/];
 
 use Sub::Install;
 
@@ -30,8 +32,11 @@ sub import {
 
 sub test {
     my ( $name, $code ) = @_;
-    my $caller = caller;
-    my $subtest = sub { shift->each_test( $name, $code ) };
+    my $caller  = caller;
+    my $subtest = sub {
+        my $self = shift;
+        subtest $name => sub { $self->each_test($code) }
+    };
     eval qq{ package $caller; after _do_tests => \$subtest };
     die $@ if $@;
 }
@@ -50,40 +55,26 @@ __END__
 
 =pod
 
+=encoding utf-8
+
 =head1 NAME
 
-Test::Roo - Composable tests with roles and Moo
+Test::Roo - Composable, reusable tests with roles and Moo
 
 =head1 VERSION
 
-version 1.000
+version 1.001
 
 =head1 SYNOPSIS
 
-A test file:
+Define test behaviors and required fixtures in a role:
 
-    # t/test.t
-    use Test::Roo; # loads Moo and Test::More
+    # t/lib/ObjectCreation.pm
 
-    use lib 't/lib';
+    package ObjectCreation;
+    use Test::Roo::Role;    # loads Moo::Role and Test::More
 
-    has class => (
-        is      => 'ro',
-        default => sub { "Digest::MD5" },
-    );
-
-    with 'MyTestRole';
-
-    run_me;
-    done_testing;
-
-A testing role:
-
-    # t/lib/MyTestRole.pm
-    package MyTestRole;
-    use Test::Roo::Role; # loads Moo::Role and Test::More
-
-    requires 'class';
+    requires 'class';       # we need this fixture
 
     test 'object creation' => sub {
         my $self = shift;
@@ -92,6 +83,55 @@ A testing role:
     };
 
     1;
+
+Provide fixtures and run tests from the .t file:
+
+    # t/test.t
+
+    use Test::Roo; # loads Moo and Test::More
+    use lib 't/lib';
+
+    # provide the fixture
+    has class => (
+        is      => 'ro',
+        default => sub { "Digest::MD5" },
+    );
+
+    # specify behaviors to test 
+    with 'ObjectCreation';
+
+    # give our subtests a pretty label
+    sub _build_description { "Testing " . shift->class }
+
+    # run the test with default fixture
+    run_me;
+
+    # run the test with different fixture
+    run_me( { class => "Digest::SHA1" } );
+
+    done_testing;
+
+Result:
+
+    $ prove -lv t
+    t/test.t .. 
+            ok 1 - require Digest::MD5;
+            ok 2 - The object isa Digest::MD5
+            1..2
+        ok 1 - object creation
+        1..1
+    ok 1 - Testing Digest::MD5
+            ok 1 - require Digest::SHA1;
+            ok 2 - The object isa Digest::SHA1
+            1..2
+        ok 1 - object creation
+        1..1
+    ok 2 - Testing Digest::SHA1
+    1..2
+    ok
+    All tests successful.
+    Files=1, Tests=2,  0 wallclock secs ( 0.02 usr  0.01 sys +  0.06 cusr  0.00 csys =  0.09 CPU)
+    Result: PASS
 
 =head1 DESCRIPTION
 
@@ -317,7 +357,7 @@ In L<Test::Roo>, setup and teardown are done by modifying C<setup> and C<teardow
 =head2 Bugs / Feature Requests
 
 Please report any bugs or feature requests through the issue tracker
-at L<https://github.com/dagolden/test-roo/issues>.
+at L<https://github.com/dagolden/Test-Roo/issues>.
 You will be notified automatically of any progress on your issue.
 
 =head2 Source Code
@@ -325,13 +365,17 @@ You will be notified automatically of any progress on your issue.
 This is open source software.  The code repository is available for
 public review and contribution under the terms of the license.
 
-L<https://github.com/dagolden/test-roo>
+L<https://github.com/dagolden/Test-Roo>
 
-  git clone git://github.com/dagolden/test-roo.git
+  git clone https://github.com/dagolden/Test-Roo.git
 
 =head1 AUTHOR
 
 David Golden <dagolden@cpan.org>
+
+=head1 CONTRIBUTOR
+
+Diab Jerius <djerius@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Cookbook;
 # ABSTRACT: Test::Roo examples
-our $VERSION = '1.000'; # VERSION
+our $VERSION = '1.001'; # VERSION
 
 1;
 
@@ -14,13 +14,15 @@ __END__
 
 =pod
 
+=encoding utf-8
+
 =head1 NAME
 
 Test::Roo::Cookbook - Test::Roo examples
 
 =head1 VERSION
 
-version 1.000
+version 1.001
 
 =head1 DESCRIPTION
 
@@ -270,6 +272,32 @@ directory, creates files and runs tests:
     1;
 
 =head1 CREATING AND MANAGING FIXTURES
+
+=head2 Skipping all tests
+
+If you need to skip all tests in the F<.t> file because some prerequisite
+isn't available or some fixture couldn't be built, use a C<BUILD> method and
+call C<< plan skip_all => $reason >>.
+
+    use Class::Load qw/try_load_class/;
+
+    has fixture => (
+        is => 'lazy',
+    );
+
+    sub _build_fixture {
+        # ... something that might die if unavailable ...
+    }
+
+    sub BUILD {
+        my ($self) = @_;
+
+        try_load_class('Class::Name')
+            or plan skip_all => "Class::Name required to run these tests";
+
+        eval { $self->fixture }
+            or plan skip_all => "Couldn't build fixture";
+    }
 
 =head2 Setting a test description
 

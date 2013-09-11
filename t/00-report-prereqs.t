@@ -12,9 +12,10 @@ use List::Util qw/max/;
 my @modules = qw(
   Capture::Tiny
   ExtUtils::MakeMaker
-  File::Find
   File::Spec::Functions
   File::Temp
+  IO::Handle
+  IPC::Open3
   List::Util
   Moo
   MooX::Types::MooseLike::Base
@@ -22,6 +23,7 @@ my @modules = qw(
   Test::More
   bareword::filehandles
   indirect
+  lib
   multidimensional
   perl
   strict

@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Role;
 # ABSTRACT: Composable role for Test::Roo
-our $VERSION = '1.000'; # VERSION
+our $VERSION = '1.001'; # VERSION
 
 use Test::Roo (); # no imports!
 use Sub::Install;
@@ -36,13 +36,15 @@ __END__
 
 =pod
 
+=encoding utf-8
+
 =head1 NAME
 
 Test::Roo::Role - Composable role for Test::Roo
 
 =head1 VERSION
 
-version 1.000
+version 1.001
 
 =head1 SYNOPSIS
 

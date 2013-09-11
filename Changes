@@ -1,5 +1,17 @@
 Revision history for Test-Roo
 
+1.001     2013-09-11 10:13:42 America/New_York
+
+    [CHANGED]
+
+    - modifiers on 'each_test' are now included in the subtest block so
+      that any tests run in the modifiers are listed with other tests in
+      the block
+
+    [DOCUMENTED]
+
+    - Enhanced SYNOPSIS
+
 1.000     2013-03-08 18:59:20 America/New_York
 
     [INCOMPATIBLE CHANGES]
