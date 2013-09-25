@@ -10,12 +10,7 @@ use Pod::Wordlist;
 add_stopwords(<DATA>);
 all_pod_files_spelling_ok( qw( bin lib  ) );
 __DATA__
-composable
-parameterized
-subclass
-subclasses
 subtest
-teardown
 David
 Golden
 dagolden
@@ -25,6 +20,6 @@ djerius
 lib
 Test
 Roo
-Cookbook
-Role
 Class
+Role
+Cookbook

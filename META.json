@@ -4,7 +4,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300038, CPAN::Meta::Converter version 2.132510",
+   "generated_by" : "Dist::Zilla version 4.300039, CPAN::Meta::Converter version 2.132620",
    "license" : [
       "apache_2_0"
    ],
@@ -27,7 +27,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "6.30"
+            "ExtUtils::MakeMaker" : "6.17"
          }
       },
       "develop" : {
@@ -57,6 +57,7 @@
          "requires" : {
             "Capture::Tiny" : "0",
             "ExtUtils::MakeMaker" : "0",
+            "File::Spec" : "0",
             "File::Spec::Functions" : "0",
             "File::Temp" : "0",
             "IO::Handle" : "0",
@@ -72,19 +73,19 @@
    "provides" : {
       "Test::Roo" : {
          "file" : "lib/Test/Roo.pm",
-         "version" : "1.001"
+         "version" : "1.002"
       },
       "Test::Roo::Class" : {
          "file" : "lib/Test/Roo/Class.pm",
-         "version" : "1.001"
+         "version" : "1.002"
       },
       "Test::Roo::Cookbook" : {
          "file" : "lib/Test/Roo/Cookbook.pm",
-         "version" : "1.001"
+         "version" : "1.002"
       },
       "Test::Roo::Role" : {
          "file" : "lib/Test/Roo/Role.pm",
-         "version" : "1.001"
+         "version" : "1.002"
       }
    },
    "release_status" : "stable",
@@ -99,7 +100,7 @@
          "web" : "https://github.com/dagolden/Test-Roo"
       }
    },
-   "version" : "1.001",
+   "version" : "1.002",
    "x_authority" : "cpan:DAGOLDEN",
    "x_contributors" : [
       "Diab Jerius <djerius@gmail.com>"

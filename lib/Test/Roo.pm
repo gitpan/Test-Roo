@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo;
 # ABSTRACT: Composable, reusable tests with roles and Moo
-our $VERSION = '1.001'; # VERSION
+our $VERSION = '1.002'; # VERSION
 
 use Test::More 0.96 import => [qw/subtest/];
 
@@ -63,7 +63,7 @@ Test::Roo - Composable, reusable tests with roles and Moo
 
 =head1 VERSION
 
-version 1.001
+version 1.002
 
 =head1 SYNOPSIS
 

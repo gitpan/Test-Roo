@@ -5,6 +5,7 @@ author:
 build_requires:
   Capture::Tiny: 0
   ExtUtils::MakeMaker: 0
+  File::Spec: 0
   File::Spec::Functions: 0
   File::Temp: 0
   IO::Handle: 0
@@ -15,9 +16,9 @@ build_requires:
   strict: 0
   warnings: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.30
+  ExtUtils::MakeMaker: 6.17
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.300038, CPAN::Meta::Converter version 2.132510'
+generated_by: 'Dist::Zilla version 4.300039, CPAN::Meta::Converter version 2.132620'
 license: apache
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -34,16 +35,16 @@ no_index:
 provides:
   Test::Roo:
     file: lib/Test/Roo.pm
-    version: 1.001
+    version: 1.002
   Test::Roo::Class:
     file: lib/Test/Roo/Class.pm
-    version: 1.001
+    version: 1.002
   Test::Roo::Cookbook:
     file: lib/Test/Roo/Cookbook.pm
-    version: 1.001
+    version: 1.002
   Test::Roo::Role:
     file: lib/Test/Roo/Role.pm
-    version: 1.001
+    version: 1.002
 recommends:
   bareword::filehandles: 0
   indirect: 0
@@ -59,7 +60,7 @@ resources:
   bugtracker: https://github.com/dagolden/Test-Roo/issues
   homepage: https://github.com/dagolden/Test-Roo
   repository: https://github.com/dagolden/Test-Roo.git
-version: 1.001
+version: 1.002
 x_authority: cpan:DAGOLDEN
 x_contributors:
   - 'Diab Jerius <djerius@gmail.com>'

@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Class;
 # ABSTRACT: Base class for Test::Roo test classes
-our $VERSION = '1.001'; # VERSION
+our $VERSION = '1.002'; # VERSION
 
 use Moo;
 use MooX::Types::MooseLike::Base qw/Str/;
@@ -89,7 +89,7 @@ Test::Roo::Class - Base class for Test::Roo test classes
 
 =head1 VERSION
 
-version 1.001
+version 1.002
 
 =head1 DESCRIPTION
 
