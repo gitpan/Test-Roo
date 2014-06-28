@@ -3,26 +3,23 @@ abstract: 'Composable, reusable tests with roles and Moo'
 author:
   - 'David Golden <dagolden@cpan.org>'
 build_requires:
-  Capture::Tiny: 0
-  ExtUtils::MakeMaker: 0
-  File::Spec: 0
-  File::Spec::Functions: 0
-  File::Temp: 0
-  IO::Handle: 0
-  IPC::Open3: 0
-  List::Util: 0
-  Test::More: 0
-  lib: 0
-  strict: 0
-  warnings: 0
+  Capture::Tiny: '0'
+  ExtUtils::MakeMaker: '0'
+  File::Spec::Functions: '0'
+  File::Temp: '0'
+  List::Util: '0'
+  lib: '0'
+  strict: '0'
+  version: '0'
+  warnings: '0'
 configure_requires:
-  ExtUtils::MakeMaker: 6.17
+  ExtUtils::MakeMaker: '6.17'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.300039, CPAN::Meta::Converter version 2.132620'
+generated_by: 'Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.141170'
 license: apache
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+  version: '1.4'
 name: Test-Roo
 no_index:
   directory:
@@ -35,32 +32,33 @@ no_index:
 provides:
   Test::Roo:
     file: lib/Test/Roo.pm
-    version: 1.002
+    version: '1.003'
   Test::Roo::Class:
     file: lib/Test/Roo/Class.pm
-    version: 1.002
+    version: '1.003'
   Test::Roo::Cookbook:
     file: lib/Test/Roo/Cookbook.pm
-    version: 1.002
+    version: '1.003'
   Test::Roo::Role:
     file: lib/Test/Roo/Role.pm
-    version: 1.002
+    version: '1.003'
 recommends:
-  bareword::filehandles: 0
-  indirect: 0
-  multidimensional: 0
+  bareword::filehandles: '0'
+  indirect: '0'
+  multidimensional: '0'
 requires:
-  Moo: 1.000008
-  MooX::Types::MooseLike::Base: 0
-  Sub::Install: 0
-  Test::More: 0.96
-  perl: 5.008001
-  strictures: 0
+  Moo: '1.000008'
+  MooX::Types::MooseLike::Base: '0'
+  Sub::Install: '0'
+  Test::More: '0.96'
+  perl: '5.008001'
+  strictures: '0'
 resources:
   bugtracker: https://github.com/dagolden/Test-Roo/issues
   homepage: https://github.com/dagolden/Test-Roo
   repository: https://github.com/dagolden/Test-Roo.git
-version: 1.002
+version: '1.003'
 x_authority: cpan:DAGOLDEN
 x_contributors:
+  - "Arthur Axel 'fREW' Schmidt <frioux@gmail.com>"
   - 'Diab Jerius <djerius@gmail.com>'

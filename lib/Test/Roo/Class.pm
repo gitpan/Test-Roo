@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Class;
 # ABSTRACT: Base class for Test::Roo test classes
-our $VERSION = '1.002'; # VERSION
+our $VERSION = '1.003'; # VERSION
 
 use Moo;
 use MooX::Types::MooseLike::Base qw/Str/;
@@ -13,6 +13,14 @@ use Test::More 0.96 import => [qw/subtest/];
 # attributes
 #--------------------------------------------------------------------------#
 
+#pod =attr description
+#pod
+#pod A description for a subtest block wrapping all tests by the object.  It is a
+#pod 'lazy' attribute.  Test classes may implement their own C<_build_description>
+#pod method to create a description from object attributes.  Otherwise, the default
+#pod is "testing with CLASS".
+#pod
+#pod =cut
 
 has description => (
     is      => 'rw',
@@ -30,6 +38,34 @@ sub _build_description {
 # class or object methods
 #--------------------------------------------------------------------------#
 
+#pod =method run_tests
+#pod
+#pod     # as a class method
+#pod     $class->run_tests();
+#pod     $class->run_tests($description);
+#pod     $class->run_tests($init_args);
+#pod     $class->run_tests($description $init_args);
+#pod
+#pod     # as an object method
+#pod     $self->run_tests();
+#pod     $self->run_tests($description);
+#pod
+#pod If called as a class method, this creates a test object using an optional hash
+#pod reference of initialization arguments.
+#pod
+#pod When called as an object method, or after an object has been generated, this
+#pod method sets an optional description and runs tests.  It will call the C<setup>
+#pod method (triggering any method modifiers), will run all tests (triggering any
+#pod method modifiers on C<each_test>) and will call the C<teardown> method
+#pod (triggering any method modifiers).
+#pod
+#pod If a description is provided, it will override any initialized or generated
+#pod C<description> attribute.
+#pod
+#pod The setup, tests and teardown will be executed in a L<Test::More> subtest
+#pod block.
+#pod
+#pod =cut
 
 sub run_tests {
     my $self = shift;
@@ -57,15 +93,37 @@ sub run_tests {
 # private methods and stubs
 #--------------------------------------------------------------------------#
 
+#pod =method setup
+#pod
+#pod This is an empty method used to anchor method modifiers.  It should not
+#pod be overridden by subclasses.
+#pod
+#pod =cut
 
 sub setup { }
 
+#pod =method each_test
+#pod
+#pod This method wraps the code references set by the C<test> function
+#pod from L<Test::Roo> or L<Test::Roo::Role> in a L<Test::More> subtest block.
+#pod
+#pod It may also be used to anchor modifiers that should run before or after
+#pod each test block, though this can lead to brittle design as modifiers
+#pod will globally affect every test block, including composed ones.
+#pod
+#pod =cut
 
 sub each_test {
     my ( $self, $code ) = @_;
     $code->($self);
 }
 
+#pod =method teardown
+#pod
+#pod This is an empty method used to anchor method modifiers.  It should not
+#pod be overridden by subclasses.
+#pod
+#pod =cut
 
 sub teardown { }
 
@@ -81,7 +139,7 @@ __END__
 
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
@@ -89,7 +147,7 @@ Test::Roo::Class - Base class for Test::Roo test classes
 
 =head1 VERSION
 
-version 1.002
+version 1.003
 
 =head1 DESCRIPTION
 

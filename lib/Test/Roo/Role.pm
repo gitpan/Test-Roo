@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Role;
 # ABSTRACT: Composable role for Test::Roo
-our $VERSION = '1.002'; # VERSION
+our $VERSION = '1.003'; # VERSION
 
 use Test::Roo (); # no imports!
 use Sub::Install;
@@ -36,7 +36,7 @@ __END__
 
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
@@ -44,7 +44,7 @@ Test::Roo::Role - Composable role for Test::Roo
 
 =head1 VERSION
 
-version 1.002
+version 1.003
 
 =head1 SYNOPSIS
 
@@ -67,8 +67,6 @@ A testing role:
 =head1 DESCRIPTION
 
 This module defines test behaviors as a L<Moo::Role>.
-
-=for Pod::Coverage method_names_here
 
 =head1 USAGE
 
@@ -120,6 +118,8 @@ You can call test functions in modifiers. For example, you could
 confirm that something has been set up or cleaned up.
 
     before each_test => sub { ok( ! shift->has_fixture ) };
+
+=for Pod::Coverage method_names_here
 
 =head1 EXPORTED FUNCTIONS
 

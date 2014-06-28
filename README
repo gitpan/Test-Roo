@@ -2,7 +2,7 @@ NAME
     Test::Roo - Composable, reusable tests with roles and Moo
 
 VERSION
-    version 1.002
+    version 1.003
 
 SYNOPSIS
     Define test behaviors and required fixtures in a role:
@@ -35,7 +35,7 @@ SYNOPSIS
             default => sub { "Digest::MD5" },
         );
 
-        # specify behaviors to test 
+        # specify behaviors to test
         with 'ObjectCreation';
 
         # give our subtests a pretty label
@@ -52,7 +52,7 @@ SYNOPSIS
     Result:
 
         $ prove -lv t
-        t/test.t .. 
+        t/test.t ..
                 ok 1 - require Digest::MD5;
                 ok 2 - The object isa Digest::MD5
                 1..2
@@ -236,6 +236,54 @@ EXPORTED FUNCTIONS
     will depend on when they are composed relative to other test
     declarations.
 
+  top_test
+        top_test $label => sub { ... };
+
+    The "top_test" function adds a "top level" test. Works exactly like
+    "test" except it will not start a subtest. This is especially useful in
+    very simple testing situations where the extra subtest level is just
+    noise.
+
+    So for example the following test
+
+        # t/test.t
+        use Test::Roo;
+
+        has class => (
+            is       => 'ro',
+            required => 1,
+        );
+
+        top_test basic => sub {
+            my $self = shift;
+
+            require_ok($self->class);
+            isa_ok($self->class->new, $self->class);
+        };
+
+        for my $c ( qw/Digest::MD5 Digest::SHA/ ) {
+            run_me("Testing $c", { class => $c } );
+        }
+
+        done_testing;
+
+    produces the following TAP
+
+        t/test.t ..
+            ok 1 - require Digest::MD5;
+            ok 2 - The object isa Digest::MD5
+            1..2
+        ok 1 - Testing Digest::MD5
+            ok 1 - require Digest::SHA1;
+            ok 2 - The object isa Digest::SHA1
+            1..2
+        ok 2 - Testing Digest::SHA1
+        1..2
+        ok
+        All tests successful.
+        Files=1, Tests=2,  0 wallclock secs ( 0.02 usr  0.01 sys +  0.06 cusr  0.00 csys =  0.09 CPU)
+        Result: PASS
+
   run_me
         run_me;
         run_me( $description );
@@ -287,8 +335,10 @@ SUPPORT
 AUTHOR
     David Golden <dagolden@cpan.org>
 
-CONTRIBUTOR
-    Diab Jerius <djerius@gmail.com>
+CONTRIBUTORS
+    *   Arthur Axel 'fREW' Schmidt <frioux@gmail.com>
+
+    *   Diab Jerius <djerius@gmail.com>
 
 COPYRIGHT AND LICENSE
     This software is Copyright (c) 2013 by David Golden.

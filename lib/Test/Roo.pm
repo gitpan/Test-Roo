@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo;
 # ABSTRACT: Composable, reusable tests with roles and Moo
-our $VERSION = '1.002'; # VERSION
+our $VERSION = '1.003'; # VERSION
 
 use Test::More 0.96 import => [qw/subtest/];
 
@@ -12,7 +12,7 @@ use Sub::Install;
 sub import {
     my ( $class, @args ) = @_;
     my $caller = caller;
-    for my $sub (qw/test run_me/) {
+    for my $sub (qw/test top_test run_me/) {
         Sub::Install::install_sub( { into => $caller, code => $sub } );
     }
     strictures->import; # do this for Moo, since we load Moo in eval
@@ -41,6 +41,14 @@ sub test {
     die $@ if $@;
 }
 
+sub top_test {
+    my ( $name, $code ) = @_;
+    my $caller = caller;
+    my $test = sub { shift->each_test($code) };
+    eval qq{ package $caller; after _do_tests => \$test };
+    die $@ if $@;
+}
+
 sub run_me {
     my $class = caller;
     $class->run_tests(@_);
@@ -55,7 +63,7 @@ __END__
 
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
@@ -63,7 +71,7 @@ Test::Roo - Composable, reusable tests with roles and Moo
 
 =head1 VERSION
 
-version 1.002
+version 1.003
 
 =head1 SYNOPSIS
 
@@ -97,7 +105,7 @@ Provide fixtures and run tests from the .t file:
         default => sub { "Digest::MD5" },
     );
 
-    # specify behaviors to test 
+    # specify behaviors to test
     with 'ObjectCreation';
 
     # give our subtests a pretty label
@@ -114,7 +122,7 @@ Provide fixtures and run tests from the .t file:
 Result:
 
     $ prove -lv t
-    t/test.t .. 
+    t/test.t ..
             ok 1 - require Digest::MD5;
             ok 2 - The object isa Digest::MD5
             1..2
@@ -158,8 +166,6 @@ compose the Awesome::Module::Test::Role behavior for its own tests.
 
 No more copying and pasting tests from a super class!  Superclasses define and
 share their tests.  Subclasses provide their own fixtures and run the tests.
-
-=for Pod::Coverage add_methods_here
 
 =head1 USAGE
 
@@ -287,6 +293,8 @@ separate F<.pm> file) and run tests explicitly on that class.
 
     done_testing;
 
+=for Pod::Coverage add_methods_here
+
 =head1 EXPORTED FUNCTIONS
 
 Loading L<Test::Roo> exports subroutines into the calling package to declare
@@ -301,6 +309,54 @@ the test object as its only argument.
 
 Tests are run in the order declared, so the order of tests from roles will
 depend on when they are composed relative to other test declarations.
+
+=head2 top_test
+
+    top_test $label => sub { ... };
+
+The C<top_test> function adds a "top level" test.  Works exactly like L</test>
+except it will not start a subtest.  This is especially useful in very simple
+testing situations where the extra subtest level is just noise.
+
+So for example the following test
+
+    # t/test.t
+    use Test::Roo;
+
+    has class => (
+        is       => 'ro',
+        required => 1,
+    );
+
+    top_test basic => sub {
+        my $self = shift;
+
+        require_ok($self->class);
+        isa_ok($self->class->new, $self->class);
+    };
+
+    for my $c ( qw/Digest::MD5 Digest::SHA/ ) {
+        run_me("Testing $c", { class => $c } );
+    }
+
+    done_testing;
+
+produces the following TAP
+
+    t/test.t ..
+        ok 1 - require Digest::MD5;
+        ok 2 - The object isa Digest::MD5
+        1..2
+    ok 1 - Testing Digest::MD5
+        ok 1 - require Digest::SHA1;
+        ok 2 - The object isa Digest::SHA1
+        1..2
+    ok 2 - Testing Digest::SHA1
+    1..2
+    ok
+    All tests successful.
+    Files=1, Tests=2,  0 wallclock secs ( 0.02 usr  0.01 sys +  0.06 cusr  0.00 csys =  0.09 CPU)
+    Result: PASS
 
 =head2 run_me
 
@@ -373,9 +429,19 @@ L<https://github.com/dagolden/Test-Roo>
 
 David Golden <dagolden@cpan.org>
 
-=head1 CONTRIBUTOR
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item *
+
+Arthur Axel 'fREW' Schmidt <frioux@gmail.com>
+
+=item *
 
 Diab Jerius <djerius@gmail.com>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
