@@ -2,7 +2,7 @@ NAME
     Test::Roo - Composable, reusable tests with roles and Moo
 
 VERSION
-    version 1.003
+    version 1.004
 
 SYNOPSIS
     Define test behaviors and required fixtures in a role:

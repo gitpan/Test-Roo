@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo::Cookbook;
 # ABSTRACT: Test::Roo examples
-our $VERSION = '1.003'; # VERSION
+our $VERSION = '1.004'; # VERSION
 
 1;
 
@@ -22,7 +22,7 @@ Test::Roo::Cookbook - Test::Roo examples
 
 =head1 VERSION
 
-version 1.003
+version 1.004
 
 =head1 DESCRIPTION
 

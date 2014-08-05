@@ -3,7 +3,7 @@ use strictures;
 
 package Test::Roo;
 # ABSTRACT: Composable, reusable tests with roles and Moo
-our $VERSION = '1.003'; # VERSION
+our $VERSION = '1.004'; # VERSION
 
 use Test::More 0.96 import => [qw/subtest/];
 
@@ -71,7 +71,7 @@ Test::Roo - Composable, reusable tests with roles and Moo
 
 =head1 VERSION
 
-version 1.003
+version 1.004
 
 =head1 SYNOPSIS
 
@@ -430,6 +430,8 @@ L<https://github.com/dagolden/Test-Roo>
 David Golden <dagolden@cpan.org>
 
 =head1 CONTRIBUTORS
+
+=for stopwords Arthur Axel 'fREW' Schmidt Diab Jerius
 
 =over 4
 
